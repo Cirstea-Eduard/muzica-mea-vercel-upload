@@ -41,7 +41,7 @@ const MusicWithUsSection = () => {
             
             <div className="w-full lg:w-1/2 relative hidden lg:block" >
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative w-105 h-[610px] bg-transparent">
+                <div className="relative w-120 h-[670px] bg-transparent">
                   <Image
                     src="/images/muzica-mea.png"
                     alt="Artist"
