@@ -88,7 +88,7 @@ const ArtistiPage = () => {
     <div className="min-h-screen bg-[#0D0D0D] text-white">
       <section className="relative py-24 px-4">
         <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-[#d62828] to-[#f77f00] bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-[#d62828] bg-clip-text text-transparent">
             Artiștii Noștri
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 mb-12">
