@@ -50,31 +50,7 @@ const ArtistiPage = () => {
     setFilteredArtisti(filtered);
   }, [searchTerm, artisti]);
 
-  const getPackageColor = (packageType: string) => {
-    switch (packageType) {
-      case 'basic':
-        return 'bg-gray-500';
-      case 'plus':
-        return 'bg-blue-500';
-      case 'premium':
-        return 'bg-gradient-to-r from-purple-500 to-pink-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
 
-  const getPackageLabel = (packageType: string) => {
-    switch (packageType) {
-      case 'basic':
-        return 'Basic';
-      case 'plus':
-        return 'Plus';
-      case 'premium':
-        return 'Premium';
-      default:
-        return 'Basic';
-    }
-  };
 
   if (loading) {
     return (

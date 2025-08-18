@@ -53,44 +53,7 @@ const ArtistPage = () => {
     }
   }, [params.id]);
 
-  const getPackageColor = (packageType: string) => {
-    switch (packageType) {
-      case 'basic':
-        return 'bg-gray-500';
-      case 'plus':
-        return 'bg-blue-500';
-      case 'premium':
-        return 'bg-gradient-to-r from-purple-500 to-pink-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
 
-  const getPackageLabel = (packageType: string) => {
-    switch (packageType) {
-      case 'basic':
-        return 'Basic';
-      case 'plus':
-        return 'Plus';
-      case 'premium':
-        return 'Premium';
-      default:
-        return 'Basic';
-    }
-  };
-
-  const getPackageFeatures = (packageType: string) => {
-    switch (packageType) {
-      case 'basic':
-        return ['Profil de bază', 'Informații de contact'];
-      case 'plus':
-        return ['Profil de bază', 'Informații de contact', 'Link social media', 'Link muzică'];
-      case 'premium':
-        return ['Profil complet', 'Informații de contact', 'Link social media', 'Link muzică', 'Promovare prioritară'];
-      default:
-        return ['Profil de bază'];
-    }
-  };
 
   const getLinkIcon = (url: string) => {
     if (url.includes('instagram.com')) {

@@ -57,7 +57,7 @@ export default function ContactPage() {
           message: result.message || 'A apărut o eroare la trimiterea mesajului.',
         });
       }
-    } catch (_error) {
+    } catch (_) {
       setSubmitStatus({
         type: 'error',
         message: 'A apărut o eroare de conexiune. Te rugăm să încerci din nou.',

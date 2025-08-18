@@ -3,6 +3,21 @@ import Stripe from 'stripe';
 import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 
+interface Artist {
+  id: string;
+  nume: string;
+  imagine: string;
+  titluPiesa: string;
+  descriere: string;
+  email: string;
+  telefon: string;
+  linkConnectare?: string;
+  linkMuzica?: string;
+  linkPiesa?: string;
+  packageType: 'basic' | 'plus' | 'premium';
+  dataInregistrare: string;
+}
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-07-30.basil',
 });
@@ -48,7 +63,7 @@ export async function GET(request: NextRequest) {
         const fileContent = await readFile(filePath, 'utf8');
         existingArtists = JSON.parse(fileContent);
       } catch (readError) {
-        console.log('Nu s-a putut citi fișierul artisti.json, se va crea unul nou');
+        console.log('Nu s-a putut citi fișierul artisti.json, se va crea unul nou', readError);
         existingArtists = [];
       }
 
@@ -82,7 +97,7 @@ export async function GET(request: NextRequest) {
         dataInregistrare: new Date().toISOString().split('T')[0],
       };
 
-      const existingArtist = existingArtists.find((artist: any) => artist.email === artistData.email);
+      const existingArtist = existingArtists.find((artist: Artist) => artist.email === artistData.email);
       if (!existingArtist) {
         existingArtists.push(newArtist);
         await writeFile(filePath, JSON.stringify(existingArtists, null, 2), 'utf8');
