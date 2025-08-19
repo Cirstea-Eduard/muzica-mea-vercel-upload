@@ -41,8 +41,8 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', onStatusUpdat
   const [radioStatus, setRadioStatus] = useState<RadioStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   
-  const RADIO_STREAM_URL = 'https://streamer.radio.co/s3f6df73e3/listen';
-  const RADIO_API_URL = 'https://public.radio.co/stations/s3f6df73e3/status';
+  const RADIO_STREAM_URL =process.env.NEXT_PUBLIC_RADIO_STREAM_URL;
+  const RADIO_API_URL = process.env.NEXT_PUBLIC_RADIO_API_URL;
 
   const fetchRadioStatus = useCallback(async () => {
     try {
