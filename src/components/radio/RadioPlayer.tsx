@@ -46,7 +46,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', onStatusUpdat
 
   const fetchRadioStatus = useCallback(async () => {
     try {
-      const response = await fetch(RADIO_API_URL);
+      const response = await fetch(RADIO_API_URL!);
       if (!response.ok) {
         throw new Error('Nu s-au putut încărca informațiile radio');
       }
