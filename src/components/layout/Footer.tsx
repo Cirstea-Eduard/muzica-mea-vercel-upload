@@ -67,7 +67,7 @@ const Footer = () => {
                 Alătură-te Ca Artist
               </Link>
               <a 
-                href="https://siteexample.com/blog"
+                href="https://blog.muzicamea.ro"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block text-lg hover:text-[#d62828] transition-colors duration-300"
