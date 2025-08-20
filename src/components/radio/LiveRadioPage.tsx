@@ -5,18 +5,72 @@ import RadioPlayer from './RadioPlayer';
 import Playlist from './Playlist';
 import { Music, Radio, Volume2 } from 'lucide-react';
 
+interface Song {
+  id: string;
+  art: string;
+  artist: string;
+  title: string;
+  album: string;
+  genre: string;
+}
+
+interface NowPlaying {
+  sh_id: number;
+  played_at: number;
+  duration: number;
+  playlist: string;
+  streamer: string;
+  is_request: boolean;
+  song: Song;
+  elapsed: number;
+  remaining: number;
+}
+
+interface PlayingNext {
+  cued_at: number;
+  played_at: number;
+  duration: number;
+  playlist: string;
+  is_request: boolean;
+  song: Song;
+}
+
+interface SongHistory {
+  sh_id: number;
+  played_at: number;
+  duration: number;
+  playlist: string;
+  streamer: string;
+  is_request: boolean;
+  song: Song;
+}
+
+interface Station {
+  id: number;
+  name: string;
+  shortcode: string;
+  description: string;
+  listen_url: string;
+  is_public: boolean;
+}
+
 interface RadioStatus {
-  status: 'online' | 'offline';
-  current_track: {
-    title: string;
-    start_time: string;
-    artwork_url: string;
-    artwork_url_large: string;
+  station: Station;
+  listeners: {
+    total: number;
+    unique: number;
+    current: number;
   };
-  history: Array<{
-    title: string;
-  }>;
-  logo_url: string;
+  live: {
+    is_live: boolean;
+    streamer_name: string;
+    broadcast_start: string | null;
+    art: string | null;
+  };
+  now_playing: NowPlaying;
+  playing_next: PlayingNext;
+  song_history: SongHistory[];
+  is_online: boolean;
 }
 
 const LiveRadioPage = () => {
@@ -45,9 +99,9 @@ const LiveRadioPage = () => {
                 Ascultă <span className="text-[#d62828]">Live</span>
               </h1>
               <div className="flex items-center justify-center space-x-2">
-                <div className={`w-3 h-3 rounded-full ${radioStatus?.status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                <div className={`w-3 h-3 rounded-full ${radioStatus?.is_online ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
                 <span className="text-lg text-[#f0f0f0]/70">
-                  În direct • MuzicaMea Radio
+                  În direct • {radioStatus?.station.name || 'MuzicaMea Radio'}
                 </span>
               </div>
             </div>

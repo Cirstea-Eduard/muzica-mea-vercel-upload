@@ -1,24 +1,74 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Music, Clock, Disc3 } from 'lucide-react';
 
-interface HistoryTrack {
+interface Song {
+  id: string;
+  art: string;
+  artist: string;
   title: string;
+  album: string;
+  genre: string;
 }
 
-interface CurrentTrack {
-  title: string;
-  start_time: string;
-  artwork_url: string;
-  artwork_url_large: string;
+interface NowPlaying {
+  sh_id: number;
+  played_at: number;
+  duration: number;
+  playlist: string;
+  streamer: string;
+  is_request: boolean;
+  song: Song;
+  elapsed: number;
+  remaining: number;
+}
+
+interface PlayingNext {
+  cued_at: number;
+  played_at: number;
+  duration: number;
+  playlist: string;
+  is_request: boolean;
+  song: Song;
+}
+
+interface SongHistory {
+  sh_id: number;
+  played_at: number;
+  duration: number;
+  playlist: string;
+  streamer: string;
+  is_request: boolean;
+  song: Song;
+}
+
+interface Station {
+  id: number;
+  name: string;
+  shortcode: string;
+  description: string;
+  listen_url: string;
+  is_public: boolean;
 }
 
 interface RadioStatus {
-  status: 'online' | 'offline';
-  current_track: CurrentTrack;
-  history: HistoryTrack[];
-  logo_url: string;
+  station: Station;
+  listeners: {
+    total: number;
+    unique: number;
+    current: number;
+  };
+  live: {
+    is_live: boolean;
+    streamer_name: string;
+    broadcast_start: string | null;
+    art: string | null;
+  };
+  now_playing: NowPlaying;
+  playing_next: PlayingNext;
+  song_history: SongHistory[];
+  is_online: boolean;
 }
 
 interface PlaylistProps {
@@ -31,10 +81,14 @@ const Playlist: React.FC<PlaylistProps> = ({ className = '', variant = 'homepage
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const RADIO_API_URL = 'https://public.radio.co/stations/s3f6df73e3/status';
+  const RADIO_API_URL = process.env.NEXT_PUBLIC_RADIO_API_URL;
 
-  const fetchPlaylistData = async () => {
+  const fetchPlaylistData = useCallback(async () => {
     try {
+      if (!RADIO_API_URL) {
+        throw new Error('URL-ul API pentru radio nu este configurat');
+      }
+      
       const response = await fetch(RADIO_API_URL);
       if (!response.ok) {
         throw new Error('Nu s-au putut încărca informațiile despre playlist');
@@ -48,7 +102,7 @@ const Playlist: React.FC<PlaylistProps> = ({ className = '', variant = 'homepage
     } finally {
       setLoading(false);
     }
-  };
+  }, [RADIO_API_URL]);
 
   useEffect(() => {
     fetchPlaylistData();
@@ -57,7 +111,7 @@ const Playlist: React.FC<PlaylistProps> = ({ className = '', variant = 'homepage
     const interval = setInterval(fetchPlaylistData, 30000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchPlaylistData]);
 
   const formatTime = (dateString: string) => {
     try {
@@ -76,20 +130,30 @@ const Playlist: React.FC<PlaylistProps> = ({ className = '', variant = 'homepage
     
     const tracks = [];
     
-    if (radioStatus.current_track) {
+    if (radioStatus.now_playing) {
+      const artistTitle = radioStatus.now_playing.song.artist 
+        ? `${radioStatus.now_playing.song.artist} - ${radioStatus.now_playing.song.title}`
+        : radioStatus.now_playing.song.title;
+      
       tracks.push({
-        title: radioStatus.current_track.title,
-        time: formatTime(radioStatus.current_track.start_time),
+        title: artistTitle,
+        time: `${Math.floor(radioStatus.now_playing.elapsed / 60)}:${String(radioStatus.now_playing.elapsed % 60).padStart(2, '0')}`,
         isCurrent: true
       });
     }
     
-    if (radioStatus.history) {
-      const historyTracks = radioStatus.history.slice(1, 10).map(track => ({
-        title: track.title,
-        time: 'Anterior',
-        isCurrent: false
-      }));
+    if (radioStatus.song_history) {
+      const historyTracks = radioStatus.song_history.slice(0, 9).map(historyItem => {
+        const artistTitle = historyItem.song.artist 
+          ? `${historyItem.song.artist} - ${historyItem.song.title}`
+          : historyItem.song.title;
+        
+        return {
+          title: artistTitle,
+          time: formatTime(new Date(historyItem.played_at * 1000).toISOString()),
+          isCurrent: false
+        };
+      });
       tracks.push(...historyTracks);
     }
     
@@ -146,9 +210,9 @@ const Playlist: React.FC<PlaylistProps> = ({ className = '', variant = 'homepage
           Playlist Live
         </h3>
         <div className="flex items-center space-x-2">
-          <div className={`w-2 h-2 rounded-full ${radioStatus?.status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+          <div className={`w-2 h-2 rounded-full ${radioStatus?.is_online ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
           <span className="text-xs text-[#f0f0f0]/60">
-            {radioStatus?.status === 'online' ? 'Live' : 'Offline'}
+            {radioStatus?.is_online ? 'Live' : 'Offline'}
           </span>
         </div>
       </div>
