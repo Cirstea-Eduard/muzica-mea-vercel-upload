@@ -6,7 +6,9 @@ import Artist from '../../../models/Artist';
 export async function GET() {
   try {
     await connectDB();
-    const artists = await Artist.find({}).sort({ createdAt: -1 });
+    const artists = await Artist.find({ 
+      packageType: { $in: ['plus', 'premium'] } 
+    }).sort({ createdAt: -1 });
 
     return NextResponse.json({
       success: true,
@@ -27,6 +29,13 @@ export async function POST(request: NextRequest) {
   try {
     await connectDB();
     const artistData = await request.json();
+
+    if (artistData.packageType === 'basic') {
+      return NextResponse.json(
+        { error: 'Planul basic nu este disponibil pentru artiști publici' },
+        { status: 400 }
+      );
+    }
 
     const newArtist = new Artist(artistData);
     await newArtist.save();
@@ -55,6 +64,13 @@ export async function PUT(request: NextRequest) {
     if (!_id) {
       return NextResponse.json(
         { error: 'ID-ul artistului este obligatoriu' },
+        { status: 400 }
+      );
+    }
+
+    if (updateData.packageType === 'basic') {
+      return NextResponse.json(
+        { error: 'Planul basic nu este disponibil pentru artiști publici' },
         { status: 400 }
       );
     }
