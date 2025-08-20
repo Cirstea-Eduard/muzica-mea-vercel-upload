@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Search, User, Music } from 'lucide-react';
 
 interface Artist {
-  id: string;
+  _id: string;
   nume: string;
   imagine: string;
   titluPiesa: string;
@@ -29,10 +29,15 @@ const ArtistiPage = () => {
   useEffect(() => {
     const loadArtisti = async () => {
       try {
-        const response = await fetch('/data/artisti.json');
-        const data = await response.json();
-        setArtisti(data);
-        setFilteredArtisti(data);
+        const response = await fetch('/api/update-artists');
+        const result = await response.json();
+        
+        if (result.success) {
+          setArtisti(result.artists);
+          setFilteredArtisti(result.artists);
+        } else {
+          console.error('Eroare la încărcarea artiștilor:', result.error);
+        }
       } catch (error) {
         console.error('Eroare la încărcarea artiștilor:', error);
       } finally {
@@ -99,7 +104,7 @@ const ArtistiPage = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredArtisti.map((artist) => (
-                <Link href={`/artisti/${artist.id}`} key={artist.id}>
+                <Link href={`/artisti/${artist._id}`} key={artist._id}>
                   <div className="bg-[#1A1A1A] rounded-2xl overflow-hidden hover:bg-[#2A2A2A] transition-all duration-300 transform hover:scale-105 border border-gray-800 hover:border-[#d62828]/50">
                     {/* Artist Image */}
                     <div className="relative h-64 overflow-hidden">

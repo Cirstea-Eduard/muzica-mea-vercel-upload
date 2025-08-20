@@ -1,22 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { readFile, writeFile } from 'fs/promises';
-import path from 'path';
-
-interface Artist {
-  id: string;
-  nume: string;
-  imagine: string;
-  titluPiesa: string;
-  descriere: string;
-  email: string;
-  telefon: string;
-  linkConnectare?: string;
-  linkMuzica?: string;
-  linkPiesa?: string;
-  packageType: 'basic' | 'plus' | 'premium';
-  dataInregistrare: string;
-}
+import connectDB from '../../../lib/mongodb';
+import Artist from '../../../models/Artist';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-07-30.basil',
@@ -56,16 +41,7 @@ export async function GET(request: NextRequest) {
     };
 
     try {
-      const filePath = path.join(process.cwd(), 'public', 'data', 'artisti.json');
-      
-      let existingArtists = [];
-      try {
-        const fileContent = await readFile(filePath, 'utf8');
-        existingArtists = JSON.parse(fileContent);
-      } catch (readError) {
-        console.log('Nu s-a putut citi fișierul artisti.json, se va crea unul nou', readError);
-        existingArtists = [];
-      }
+      await connectDB();
 
       let packageType: 'basic' | 'plus' | 'premium' = 'basic';
       switch (artistData.package) {
@@ -82,32 +58,31 @@ export async function GET(request: NextRequest) {
           packageType = 'basic';
       }
 
-      const newArtist = {
-        id: Date.now().toString(),
-        nume: artistData.artistName,
-        imagine: '/logo.png',
-        titluPiesa: artistData.songTitle,
-        descriere: artistData.description,
-        email: artistData.email,
-        telefon: artistData.phone,
-        linkConnectare: artistData.linkConnectare,
-        linkMuzica: artistData.linkMuzica,
-        linkPiesa: '',
-        packageType: packageType,
-        dataInregistrare: new Date().toISOString().split('T')[0],
-      };
-
-      const existingArtist = existingArtists.find((artist: Artist) => artist.email === artistData.email);
+      const existingArtist = await Artist.findOne({ email: artistData.email });
+      
       if (!existingArtist) {
-        existingArtists.push(newArtist);
-        await writeFile(filePath, JSON.stringify(existingArtists, null, 2), 'utf8');
-        console.log('Artist nou adăugat în artisti.json:', newArtist.nume);
+        const newArtist = new Artist({
+          nume: artistData.artistName,
+          imagine: '/logo.png',
+          titluPiesa: artistData.songTitle,
+          descriere: artistData.description,
+          email: artistData.email,
+          telefon: artistData.phone,
+          linkConnectare: artistData.linkConnectare,
+          linkMuzica: artistData.linkMuzica,
+          linkPiesa: '',
+          packageType: packageType,
+          dataInregistrare: new Date().toISOString().split('T')[0],
+        });
+
+        await newArtist.save();
+        console.log('Artist nou adăugat în MongoDB:', newArtist.nume);
       } else {
         console.log('Artistul există deja în baza de date:', artistData.email);
       }
 
     } catch (saveError) {
-      console.error('Eroare la salvarea artistului:', saveError);
+      console.error('Eroare la salvarea artistului în MongoDB:', saveError);
     }
 
     return NextResponse.json({

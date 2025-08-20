@@ -1,21 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile, writeFile } from 'fs/promises';
-import path from 'path';
-
-interface Artist {
-  id: string;
-  nume: string;
-  imagine: string;
-  titluPiesa: string;
-  descriere: string;
-  email: string;
-  telefon: string;
-  linkConnectare?: string;
-  linkMuzica?: string;
-  linkPiesa?: string;
-  packageType: 'basic' | 'plus' | 'premium';
-  dataInregistrare: string;
-}
+import connectDB from '../../../lib/mongodb';
+import Artist from '../../../models/Artist';
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,38 +13,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const filePath = path.join(process.cwd(), 'public', 'data', 'artisti.json');
-    
-    let artists = [];
-    try {
-      const fileContent = await readFile(filePath, 'utf8');
-      artists = JSON.parse(fileContent);
-    } catch (readError) {
-      console.log('Nu s-a putut citi fișierul artisti.json',readError);
-      return NextResponse.json(
-        { error: 'Nu s-a putut accesa lista artiștilor' },
-        { status: 500 }
-      );
-    }
+    await connectDB();
 
-    const artistIndex = artists.findIndex((artist: Artist) => artist.email === email);
+    const artist = await Artist.findOne({ email });
     
-    if (artistIndex === -1) {
+    if (!artist) {
       return NextResponse.json(
         { error: 'Artistul nu a fost găsit' },
         { status: 404 }
       );
     }
 
+    const updateData: Record<string, string> = {};
+    
     if (linkPiesa) {
-      artists[artistIndex].linkPiesa = linkPiesa;
+      updateData.linkPiesa = linkPiesa;
     }
     
     if (imagine && imagine !== '/logo.png') {
-      artists[artistIndex].imagine = imagine;
+      updateData.imagine = imagine;
     }
 
-    await writeFile(filePath, JSON.stringify(artists, null, 2), 'utf8');
+    await Artist.findByIdAndUpdate(artist._id, updateData, { new: true });
 
     return NextResponse.json({ 
       success: true, 

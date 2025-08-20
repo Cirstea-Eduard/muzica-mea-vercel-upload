@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Plus, Edit2, Trash2, Save, X, Search, Lock } from 'lucide-react';
 
 interface Artist {
-  id: string;
+  _id?: string;
   nume: string;
   imagine: string;
   titluPiesa: string;
@@ -78,10 +78,15 @@ const AdminPage = () => {
 
   const loadArtisti = async () => {
     try {
-      const response = await fetch('/data/artisti.json');
-      const data = await response.json();
-      setArtisti(data);
-      setFilteredArtisti(data);
+      const response = await fetch('/api/update-artists');
+      const result = await response.json();
+      
+      if (result.success) {
+        setArtisti(result.artists);
+        setFilteredArtisti(result.artists);
+      } else {
+        console.error('Eroare la încărcarea artiștilor:', result.error);
+      }
     } catch (error) {
       console.error('Eroare la încărcarea artiștilor:', error);
     } finally {
@@ -89,25 +94,73 @@ const AdminPage = () => {
     }
   };
 
-  const saveArtistsToFile = async (newArtisti: Artist[]) => {
+  const createArtist = async (artistData: Artist) => {
     try {
       const response = await fetch('/api/update-artists', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ artists: newArtisti }),
+        body: JSON.stringify(artistData),
       });
 
-      if (!response.ok) {
-        throw new Error('Eroare la salvarea datelor');
+      const result = await response.json();
+      
+      if (result.success) {
+        await loadArtisti(); // Reload data from database
+        return true;
+      } else {
+        throw new Error(result.error);
       }
-
-      setArtisti(newArtisti);
-      return true;
     } catch (error) {
-      console.error('Eroare la salvare:', error);
-      alert('Eroare la salvarea datelor');
+      console.error('Eroare la crearea artistului:', error);
+      alert('Eroare la crearea artistului');
+      return false;
+    }
+  };
+
+  const updateArtist = async (artistData: Artist) => {
+    try {
+      const response = await fetch('/api/update-artists', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(artistData),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        await loadArtisti(); // Reload data from database
+        return true;
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('Eroare la actualizarea artistului:', error);
+      alert('Eroare la actualizarea artistului');
+      return false;
+    }
+  };
+
+  const deleteArtist = async (id: string) => {
+    try {
+      const response = await fetch(`/api/update-artists?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        await loadArtisti(); // Reload data from database
+        return true;
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('Eroare la ștergerea artistului:', error);
+      alert('Eroare la ștergerea artistului');
       return false;
     }
   };
@@ -120,9 +173,8 @@ const AdminPage = () => {
 
   const handleAddNew = () => {
     const newArtist: Partial<Artist> = {
-      id: Date.now().toString(),
       nume: '',
-      imagine: '/images/default-artist.jpg',
+      imagine: '/logo.png',
       titluPiesa: '',
       descriere: '',
       email: '',
@@ -145,17 +197,14 @@ const AdminPage = () => {
     }
 
     const artistData = formData as Artist;
-    let newArtisti: Artist[];
+    let success = false;
 
     if (isAddingNew) {
-      newArtisti = [...artisti, artistData];
+      success = await createArtist(artistData);
     } else {
-      newArtisti = artisti.map(artist => 
-        artist.id === artistData.id ? artistData : artist
-      );
+      success = await updateArtist(artistData);
     }
 
-    const success = await saveArtistsToFile(newArtisti);
     if (success) {
       setEditingArtist(null);
       setIsAddingNew(false);
@@ -168,8 +217,7 @@ const AdminPage = () => {
       return;
     }
 
-    const newArtisti = artisti.filter(artist => artist.id !== id);
-    await saveArtistsToFile(newArtisti);
+    await deleteArtist(id);
   };
 
   const handleCancelEdit = () => {
@@ -484,7 +532,7 @@ const AdminPage = () => {
                   </tr>
                 ) : (
                   filteredArtisti.map((artist) => (
-                    <tr key={artist.id} className="border-t border-gray-800 hover:bg-[#2A2A2A] transition-colors">
+                    <tr key={artist._id} className="border-t border-gray-800 hover:bg-[#2A2A2A] transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-white font-semibold">
@@ -492,7 +540,7 @@ const AdminPage = () => {
                           </div>
                           <div>
                             <div className="font-medium text-white">{artist.nume}</div>
-                            <div className="text-sm text-gray-400">ID: {artist.id}</div>
+                            <div className="text-sm text-gray-400">ID: {artist._id}</div>
                           </div>
                         </div>
                       </td>
@@ -533,7 +581,7 @@ const AdminPage = () => {
                             <Edit2 className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => handleDeleteArtist(artist.id)}
+                            onClick={() => handleDeleteArtist(artist._id!)}
                             className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                             title="Șterge"
                           >
