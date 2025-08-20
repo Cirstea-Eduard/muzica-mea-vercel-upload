@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { Music, Clock, Disc3 } from 'lucide-react';
+import { useRadio } from '@/contexts/RadioContext';
 
 interface Song {
   id: string;
@@ -77,41 +78,7 @@ interface PlaylistProps {
 }
 
 const Playlist: React.FC<PlaylistProps> = ({ className = '', variant = 'homepage' }) => {
-  const [radioStatus, setRadioStatus] = useState<RadioStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const RADIO_API_URL = process.env.NEXT_PUBLIC_RADIO_API_URL;
-
-  const fetchPlaylistData = useCallback(async () => {
-    try {
-      if (!RADIO_API_URL) {
-        throw new Error('URL-ul API pentru radio nu este configurat');
-      }
-      
-      const response = await fetch(RADIO_API_URL);
-      if (!response.ok) {
-        throw new Error('Nu s-au putut încărca informațiile despre playlist');
-      }
-      const data: RadioStatus = await response.json();
-      setRadioStatus(data);
-      setError(null);
-    } catch (err) {
-      console.error('Eroare la încărcarea playlist-ului:', err);
-      setError('Nu s-au putut încărca informațiile despre playlist');
-    } finally {
-      setLoading(false);
-    }
-  }, [RADIO_API_URL]);
-
-  useEffect(() => {
-    fetchPlaylistData();
-    
-    // Update playlist every 30 seconds
-    const interval = setInterval(fetchPlaylistData, 30000);
-    
-    return () => clearInterval(interval);
-  }, [fetchPlaylistData]);
+  const { radioStatus, localElapsed } = useRadio();
 
   const formatTime = (dateString: string) => {
     try {
@@ -135,11 +102,11 @@ const Playlist: React.FC<PlaylistProps> = ({ className = '', variant = 'homepage
         ? `${radioStatus.now_playing.song.artist} - ${radioStatus.now_playing.song.title}`
         : radioStatus.now_playing?.song?.title || 'Muzică în curs...';
       
-      tracks.push({
-        title: artistTitle,
-        time: `${Math.floor((radioStatus.now_playing?.elapsed || 0) / 60)}:${String((radioStatus.now_playing?.elapsed || 0) % 60).padStart(2, '0')}`,
-        isCurrent: true
-      });
+              tracks.push({
+          title: artistTitle,
+          time: `${Math.floor(localElapsed / 60)}:${String(localElapsed % 60).padStart(2, '0')}`,
+          isCurrent: true
+        });
     }
     
     if (radioStatus.song_history) {
@@ -162,7 +129,7 @@ const Playlist: React.FC<PlaylistProps> = ({ className = '', variant = 'homepage
 
   const displayTracks = getDisplayTracks();
 
-  if (loading) {
+  if (!radioStatus) {
     return (
       <div className={`bg-gradient-to-br from-[#1a1a1a] to-[#0D0D0D] border border-[#d62828]/30 rounded-lg p-6 shadow-xl ${className}`}>
         <h3 className="text-xl font-semibold text-[#d62828] mb-4 flex items-center">
@@ -181,26 +148,7 @@ const Playlist: React.FC<PlaylistProps> = ({ className = '', variant = 'homepage
     );
   }
 
-  if (error) {
-    return (
-      <div className={`bg-gradient-to-br from-[#1a1a1a] to-[#0D0D0D] border border-[#d62828]/30 rounded-lg p-6 shadow-xl ${className}`}>
-        <h3 className="text-xl font-semibold text-[#d62828] mb-4 flex items-center">
-          <Music className="mr-2 h-5 w-5" />
-          Playlist Live
-        </h3>
-        <div className="text-center py-8">
-          <div className="mb-4">⚠️</div>
-          <p className="text-red-400 text-sm">{error}</p>
-          <button 
-            onClick={fetchPlaylistData}
-            className="mt-4 px-4 py-2 bg-[#d62828] text-white rounded-lg text-sm hover:bg-[#b61e1e] transition-colors"
-          >
-            Încearcă din nou
-          </button>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className={`bg-gradient-to-br from-[#1a1a1a] to-[#0D0D0D] border border-[#d62828]/30 rounded-lg p-6 shadow-xl ${variant === 'fullpage' ? 'flex flex-col h-full' : ''} ${className}`}>
