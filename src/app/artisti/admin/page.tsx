@@ -14,7 +14,7 @@ interface Artist {
   linkConnectare?: string;
   linkMuzica?: string;
   linkPiesa?: string;
-  packageType: 'basic' | 'plus' | 'premium';
+  packageType: 'plus' | 'premium';
   dataInregistrare: string;
 }
 
@@ -182,7 +182,7 @@ const AdminPage = () => {
       linkConnectare: '',
       linkMuzica: '',
       linkPiesa: '',
-      packageType: 'basic',
+      packageType: 'plus',
       dataInregistrare: new Date().toISOString().split('T')[0],
     };
     setFormData(newArtist);
@@ -429,11 +429,10 @@ const AdminPage = () => {
                   Pachet
                 </label>
                 <select
-                  value={formData.packageType || 'basic'}
-                  onChange={(e) => setFormData(prev => ({ ...prev, packageType: e.target.value as 'basic' | 'plus' | 'premium' }))}
+                  value={formData.packageType || 'plus'}
+                  onChange={(e) => setFormData(prev => ({ ...prev, packageType: e.target.value as 'plus' | 'premium' }))}
                   className="w-full px-4 py-2 bg-[#2A2A2A] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-[#d62828] transition-colors"
                 >
-                  <option value="basic">Basic</option>
                   <option value="plus">Plus</option>
                   <option value="premium">Premium</option>
                 </select>
@@ -560,12 +559,10 @@ const AdminPage = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${
-                          artist.packageType === 'basic' ? 'bg-gray-500' :
                           artist.packageType === 'plus' ? 'bg-blue-500' :
                           'bg-gradient-to-r from-purple-500 to-pink-500'
                         }`}>
-                          {artist.packageType === 'basic' ? 'Basic' :
-                           artist.packageType === 'plus' ? 'Plus' : 'Premium'}
+                          {artist.packageType === 'plus' ? 'Plus' : 'Premium'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-gray-300">

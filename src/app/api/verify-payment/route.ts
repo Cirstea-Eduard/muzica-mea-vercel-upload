@@ -58,27 +58,31 @@ export async function GET(request: NextRequest) {
           packageType = 'basic';
       }
 
-      const existingArtist = await Artist.findOne({ email: artistData.email });
-      
-      if (!existingArtist) {
-        const newArtist = new Artist({
-          nume: artistData.artistName,
-          imagine: '/logo.png',
-          titluPiesa: artistData.songTitle,
-          descriere: artistData.description,
-          email: artistData.email,
-          telefon: artistData.phone,
-          linkConnectare: artistData.linkConnectare,
-          linkMuzica: artistData.linkMuzica,
-          linkPiesa: '',
-          packageType: packageType,
-          dataInregistrare: new Date().toISOString().split('T')[0],
-        });
+      if (packageType === 'plus' || packageType === 'premium') {
+        const existingArtist = await Artist.findOne({ email: artistData.email });
+        
+        if (!existingArtist) {
+          const newArtist = new Artist({
+            nume: artistData.artistName,
+            imagine: '/logo.png',
+            titluPiesa: artistData.songTitle,
+            descriere: artistData.description,
+            email: artistData.email,
+            telefon: artistData.phone,
+            linkConnectare: artistData.linkConnectare,
+            linkMuzica: artistData.linkMuzica,
+            linkPiesa: '',
+            packageType: packageType,
+            dataInregistrare: new Date().toISOString().split('T')[0],
+          });
 
-        await newArtist.save();
-        console.log('Artist nou adăugat în MongoDB:', newArtist.nume);
+          await newArtist.save();
+          console.log('Artist nou adăugat în MongoDB:', newArtist.nume);
+        } else {
+          console.log('Artistul există deja în baza de date:', artistData.email);
+        }
       } else {
-        console.log('Artistul există deja în baza de date:', artistData.email);
+        console.log('Artist cu plan basic - doar email de notificare trimis:', artistData.email);
       }
 
     } catch (saveError) {

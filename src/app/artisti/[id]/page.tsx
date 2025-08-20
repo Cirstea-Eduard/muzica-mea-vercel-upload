@@ -18,7 +18,7 @@ interface Artist {
   linkConnectare?: string;
   linkMuzica?: string;
   linkPiesa?: string;
-  packageType: 'basic' | 'plus' | 'premium';
+  packageType: 'plus' | 'premium';
   dataInregistrare: string;
 }
 
