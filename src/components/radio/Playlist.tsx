@@ -131,26 +131,26 @@ const Playlist: React.FC<PlaylistProps> = ({ className = '', variant = 'homepage
     const tracks = [];
     
     if (radioStatus.now_playing) {
-      const artistTitle = radioStatus.now_playing.song.artist 
+      const artistTitle = radioStatus.now_playing?.song?.artist 
         ? `${radioStatus.now_playing.song.artist} - ${radioStatus.now_playing.song.title}`
-        : radioStatus.now_playing.song.title;
+        : radioStatus.now_playing?.song?.title || 'Muzică în curs...';
       
       tracks.push({
         title: artistTitle,
-        time: `${Math.floor(radioStatus.now_playing.elapsed / 60)}:${String(radioStatus.now_playing.elapsed % 60).padStart(2, '0')}`,
+        time: `${Math.floor((radioStatus.now_playing?.elapsed || 0) / 60)}:${String((radioStatus.now_playing?.elapsed || 0) % 60).padStart(2, '0')}`,
         isCurrent: true
       });
     }
     
     if (radioStatus.song_history) {
       const historyTracks = radioStatus.song_history.slice(0, 9).map(historyItem => {
-        const artistTitle = historyItem.song.artist 
+        const artistTitle = historyItem?.song?.artist 
           ? `${historyItem.song.artist} - ${historyItem.song.title}`
-          : historyItem.song.title;
+          : historyItem?.song?.title || 'Piesă necunoscută';
         
         return {
           title: artistTitle,
-          time: formatTime(new Date(historyItem.played_at * 1000).toISOString()),
+          time: formatTime(new Date((historyItem?.played_at || 0) * 1000).toISOString()),
           isCurrent: false
         };
       });

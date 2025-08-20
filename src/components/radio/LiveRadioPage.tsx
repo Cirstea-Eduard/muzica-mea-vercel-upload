@@ -101,7 +101,7 @@ const LiveRadioPage = () => {
               <div className="flex items-center justify-center space-x-2">
                 <div className={`w-3 h-3 rounded-full ${radioStatus?.is_online ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
                 <span className="text-lg text-[#f0f0f0]/70">
-                  În direct • {radioStatus?.station.name || 'MuzicaMea Radio'}
+                  În direct • {radioStatus?.station?.name || 'MuzicaMea Radio'}
                 </span>
               </div>
             </div>
