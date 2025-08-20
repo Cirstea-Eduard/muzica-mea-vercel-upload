@@ -72,13 +72,10 @@ const ArtistSchema: Schema = new Schema({
   timestamps: true
 });
 
-// Index pentru search rapid după email
 ArtistSchema.index({ email: 1 });
 
-// Index pentru search după nume
 ArtistSchema.index({ nume: 1 });
 
-// Prevent model re-compilation in development
 const Artist = mongoose.models.Artist || mongoose.model<IArtist>('Artist', ArtistSchema);
 
 export default Artist;
