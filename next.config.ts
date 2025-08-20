@@ -22,6 +22,12 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
+          protocol: 'https',
+          hostname: 'a12.asurahosting.com',
+          port: '',
+          pathname: '/**',
+      },
+      {
         protocol: 'https',
         hostname: 'is3-ssl.mzstatic.com',
         port: '',
