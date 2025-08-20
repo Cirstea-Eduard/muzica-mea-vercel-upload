@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import RadioPlayer from './RadioPlayer';
 import Playlist from './Playlist';
 import { Music, Radio, Volume2 } from 'lucide-react';
+import { useRadio } from '@/contexts/RadioContext';
 
 interface Song {
   id: string;
@@ -74,11 +75,7 @@ interface RadioStatus {
 }
 
 const LiveRadioPage = () => {
-  const [radioStatus, setRadioStatus] = useState<RadioStatus | null>(null);
-
-  const handleStatusUpdate = (status: RadioStatus) => {
-    setRadioStatus(status);
-  };
+  const { radioStatus } = useRadio();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#000000] via-[#0D0D0D] to-[#1a1a1a] text-[#f0f0f0] overflow-hidden">
@@ -121,7 +118,6 @@ const LiveRadioPage = () => {
                     <RadioPlayer 
                       variant="expanded"
                       className="h-full" 
-                      onStatusUpdate={handleStatusUpdate}
                     />
                   </div>
                 </div>

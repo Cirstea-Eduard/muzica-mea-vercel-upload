@@ -1,252 +1,28 @@
 'use client';
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import { Play, Pause, Volume2, VolumeX, Radio, Music } from 'lucide-react';
-
-interface Song {
-  id: string;
-  art: string;
-  artist: string;
-  title: string;
-  album: string;
-  genre: string;
-}
-
-interface NowPlaying {
-  sh_id: number;
-  played_at: number;
-  duration: number;
-  playlist: string;
-  streamer: string;
-  is_request: boolean;
-  song: Song;
-  elapsed: number;
-  remaining: number;
-}
-
-interface PlayingNext {
-  cued_at: number;
-  played_at: number;
-  duration: number;
-  playlist: string;
-  is_request: boolean;
-  song: Song;
-}
-
-interface SongHistory {
-  sh_id: number;
-  played_at: number;
-  duration: number;
-  playlist: string;
-  streamer: string;
-  is_request: boolean;
-  song: Song;
-}
-
-interface Station {
-  id: number;
-  name: string;
-  shortcode: string;
-  description: string;
-  listen_url: string;
-  is_public: boolean;
-}
-
-interface RadioStatus {
-  station: Station;
-  listeners: {
-    total: number;
-    unique: number;
-    current: number;
-  };
-  live: {
-    is_live: boolean;
-    streamer_name: string;
-    broadcast_start: string | null;
-    art: string | null;
-  };
-  now_playing: NowPlaying;
-  playing_next: PlayingNext;
-  song_history: SongHistory[];
-  is_online: boolean;
-}
+import { useRadio } from '@/contexts/RadioContext';
 
 interface RadioPlayerProps {
   className?: string;
-  onStatusUpdate?: (status: RadioStatus) => void;
   variant?: 'compact' | 'expanded';
 }
 
-const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', onStatusUpdate, variant = 'compact' }) => {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [volume, setVolume] = useState(0.7);
-  const [isMuted, setIsMuted] = useState(false);
-  const [radioStatus, setRadioStatus] = useState<RadioStatus | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  
-  const RADIO_STREAM_URL = process.env.NEXT_PUBLIC_RADIO_STREAM_URL;
-  const RADIO_API_URL = process.env.NEXT_PUBLIC_RADIO_API_URL;
-
-
-
-    const fetchRadioStatus = useCallback(async () => {
-    try {
-      if (!RADIO_API_URL) {
-        throw new Error('URL-ul API pentru radio nu este configurat');
-      }
-      
-      const response = await fetch(RADIO_API_URL);
-      if (!response.ok) {
-        throw new Error('Nu s-au putut încărca informațiile radio');
-      }
-      const data: RadioStatus = await response.json();
-      setRadioStatus(data);
-      setError(null);
-      
-      if (onStatusUpdate) {
-        onStatusUpdate(data);
-      }
-    } catch (err) {
-      console.error('Eroare la încărcarea statusului radio:', err);
-      setError('Nu s-au putut încărca informațiile radio');
-    }
-  }, [RADIO_API_URL, onStatusUpdate]);
-
-  useEffect(() => {
-    fetchRadioStatus();
-    
-    const interval = setInterval(fetchRadioStatus, 30000);
-    
-    return () => clearInterval(interval);
-  }, [fetchRadioStatus]);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    audio.volume = volume;
-    
-    const handleCanPlay = () => {
-      setIsLoading(false);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    };
-    const handleLoadStart = () => setIsLoading(true);
-    const handleWaiting = () => setIsLoading(true);
-    const handlePlaying = () => {
-      setIsLoading(false);
-      setIsPlaying(true);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    };
-    const handleError = () => {
-      setIsLoading(false);
-      setIsPlaying(false);
-      setError('Eroare la încărcarea stream-ului');
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    };
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => {
-      setIsPlaying(false);
-      setIsLoading(false);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    };
-
-    audio.addEventListener('canplay', handleCanPlay);
-    audio.addEventListener('loadstart', handleLoadStart);
-    audio.addEventListener('waiting', handleWaiting);
-    audio.addEventListener('playing', handlePlaying);
-    audio.addEventListener('error', handleError);
-    audio.addEventListener('play', handlePlay);
-    audio.addEventListener('pause', handlePause);
-
-    return () => {
-      audio.removeEventListener('canplay', handleCanPlay);
-      audio.removeEventListener('loadstart', handleLoadStart);
-      audio.removeEventListener('waiting', handleWaiting);
-      audio.removeEventListener('playing', handlePlaying);
-      audio.removeEventListener('error', handleError);
-      audio.removeEventListener('play', handlePlay);
-      audio.removeEventListener('pause', handlePause);
-      
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    };
-  }, [volume]);
-
-  const togglePlay = async () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-
-    try {
-      if (isPlaying) {
-        audio.pause();
-        setIsLoading(false);
-      } else {
-        setIsLoading(true);
-        setError(null);
-        
-        const playPromise = audio.play();
-        
-        if (playPromise !== undefined) {
-          await playPromise;
-        }
-        
-        timeoutRef.current = setTimeout(() => {
-          if (isLoading && !isPlaying) {
-            setIsLoading(false);
-            setError('Stream-ul se încarcă lent. Încercați din nou.');
-          }
-        }, 8000);
-      }
-    } catch (err) {
-      console.error('Eroare la redarea audio:', err);
-      setError('Nu s-a putut reda stream-ul. Încercați din nou.');
-      setIsPlaying(false);
-      setIsLoading(false);
-    }
-  };
-
-  const handleVolumeChange = (newVolume: number) => {
-    setVolume(newVolume);
-    if (audioRef.current) {
-      audioRef.current.volume = newVolume;
-    }
-    if (newVolume === 0) {
-      setIsMuted(true);
-    } else {
-      setIsMuted(false);
-    }
-  };
-
-  const toggleMute = () => {
-    if (isMuted) {
-      handleVolumeChange(0.7);
-    } else {
-      handleVolumeChange(0);
-    }
-  };
+const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', variant = 'compact' }) => {
+  const {
+    isPlaying,
+    isLoading,
+    volume,
+    isMuted,
+    radioStatus,
+    error,
+    localElapsed,
+    togglePlay,
+    handleVolumeChange,
+    toggleMute,
+  } = useRadio();
 
 
 
@@ -365,13 +141,6 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', onStatusUpdat
 
         </div>
 
-        <audio
-          ref={audioRef}
-          src={RADIO_STREAM_URL}
-          preload="none"
-          className="hidden"
-        />
-
         <style jsx>{`
           .slider {
             background: linear-gradient(to right, #d62828 0%, #d62828 ${(volume * 100)}%, #333 ${(volume * 100)}%, #333 100%);
@@ -471,7 +240,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', onStatusUpdat
                   {radioStatus.now_playing?.song?.title || 'Muzică în curs...'}
                 </h4>
                 <p className="text-sm text-[#f0f0f0]/60">
-                  {Math.floor((radioStatus.now_playing?.elapsed || 0) / 60)}:{String((radioStatus.now_playing?.elapsed || 0) % 60).padStart(2, '0')} / 
+                  {Math.floor(localElapsed / 60)}:{String(localElapsed % 60).padStart(2, '0')} / 
                   {Math.floor((radioStatus.now_playing?.duration || 0) / 60)}:{String(Math.floor(radioStatus.now_playing?.duration || 0) % 60).padStart(2, '0')}
                 </p>
               </div>
@@ -513,13 +282,6 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', onStatusUpdat
             </p>
           )}
         </div>
-
-        <audio
-          ref={audioRef}
-          src={RADIO_STREAM_URL}
-          preload="none"
-          className="hidden"
-        />
       </div>
 
       <style jsx>{`

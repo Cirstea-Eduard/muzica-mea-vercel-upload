@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import {SpeedInsights} from "@vercel/speed-insights/next";
+import { RadioProvider } from "@/contexts/RadioContext";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -72,15 +73,17 @@ export default function RootLayout({
       <body
         className={`${roboto.variable} font-roboto antialiased`}
       >
-        <div className="min-h-screen flex flex-col bg-[#000000]">
-          <Navbar />
-          <main className="flex-1">
-            {children}
-              <SpeedInsights />
+        <RadioProvider>
+          <div className="min-h-screen flex flex-col bg-[#000000]">
+            <Navbar />
+            <main className="flex-1">
+              {children}
+                <SpeedInsights />
 
-          </main>
-          <Footer />
-        </div>
+            </main>
+            <Footer />
+          </div>
+        </RadioProvider>
       </body>
     </html>
   );
