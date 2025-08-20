@@ -1,28 +1,165 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { Play, Pause, Volume2, VolumeX, Radio, Music } from 'lucide-react';
-import { useRadio } from '@/contexts/RadioContext';
+import AudioManager from '@/lib/audioManager';
+
+interface Song {
+  id: string;
+  art: string;
+  artist: string;
+  title: string;
+  album: string;
+  genre: string;
+}
+
+interface NowPlaying {
+  sh_id: number;
+  played_at: number;
+  duration: number;
+  playlist: string;
+  streamer: string;
+  is_request: boolean;
+  song: Song;
+  elapsed: number;
+  remaining: number;
+}
+
+interface PlayingNext {
+  cued_at: number;
+  played_at: number;
+  duration: number;
+  playlist: string;
+  is_request: boolean;
+  song: Song;
+}
+
+interface SongHistory {
+  sh_id: number;
+  played_at: number;
+  duration: number;
+  playlist: string;
+  streamer: string;
+  is_request: boolean;
+  song: Song;
+}
+
+interface Station {
+  id: number;
+  name: string;
+  shortcode: string;
+  description: string;
+  listen_url: string;
+  is_public: boolean;
+}
+
+interface RadioStatus {
+  station: Station;
+  listeners: {
+    total: number;
+    unique: number;
+    current: number;
+  };
+  live: {
+    is_live: boolean;
+    streamer_name: string;
+    broadcast_start: string | null;
+    art: string | null;
+  };
+  now_playing: NowPlaying;
+  playing_next: PlayingNext;
+  song_history: SongHistory[];
+  is_online: boolean;
+}
 
 interface RadioPlayerProps {
   className?: string;
+  onStatusUpdate?: (status: RadioStatus) => void;
   variant?: 'compact' | 'expanded';
 }
 
-const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', variant = 'compact' }) => {
-  const {
-    isPlaying,
-    isLoading,
-    volume,
-    isMuted,
-    radioStatus,
-    error,
-    localElapsed,
-    togglePlay,
-    handleVolumeChange,
-    toggleMute,
-  } = useRadio();
+const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', onStatusUpdate, variant = 'compact' }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [volume, setVolume] = useState(0.7);
+  const [isMuted, setIsMuted] = useState(false);
+  const [radioStatus, setRadioStatus] = useState<RadioStatus | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  
+  const audioManager = AudioManager.getInstance();
+  const RADIO_API_URL = process.env.NEXT_PUBLIC_RADIO_API_URL;
+
+
+
+    const fetchRadioStatus = useCallback(async () => {
+    try {
+      if (!RADIO_API_URL) {
+        throw new Error('URL-ul API pentru radio nu este configurat');
+      }
+      
+      const response = await fetch(RADIO_API_URL);
+      if (!response.ok) {
+        throw new Error('Nu s-au putut încărca informațiile radio');
+      }
+      const data: RadioStatus = await response.json();
+      setRadioStatus(data);
+      setError(null);
+      
+      if (onStatusUpdate) {
+        onStatusUpdate(data);
+      }
+    } catch (err) {
+      console.error('Eroare la încărcarea statusului radio:', err);
+      setError('Nu s-au putut încărca informațiile radio');
+    }
+  }, [RADIO_API_URL, onStatusUpdate]);
+
+  useEffect(() => {
+    fetchRadioStatus();
+    
+    const interval = setInterval(fetchRadioStatus, 30000);
+    
+    return () => clearInterval(interval);
+  }, [fetchRadioStatus]);
+
+  useEffect(() => {
+    const unsubscribe = audioManager.subscribe((playing, loading) => {
+      setIsPlaying(playing);
+      setIsLoading(loading);
+    });
+
+    const state = audioManager.getState();
+    setIsPlaying(state.isPlaying);
+    setIsLoading(state.isLoading);
+    setVolume(state.volume);
+    setIsMuted(state.isMuted);
+
+    return unsubscribe;
+  }, [audioManager]);
+
+  const togglePlay = async () => {
+    try {
+      setError(null);
+      await audioManager.togglePlay();
+    } catch (err) {
+      console.error('Eroare la redarea audio:', err);
+      setError('Nu s-a putut reda stream-ul. Încercați din nou.');
+    }
+  };
+
+  const handleVolumeChange = (newVolume: number) => {
+    audioManager.setVolume(newVolume);
+    setVolume(newVolume);
+    setIsMuted(newVolume === 0);
+  };
+
+  const toggleMute = () => {
+    audioManager.toggleMute();
+    const state = audioManager.getState();
+    setVolume(state.volume);
+    setIsMuted(state.isMuted);
+  };
 
 
 
@@ -141,6 +278,8 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', variant = 'co
 
         </div>
 
+
+
         <style jsx>{`
           .slider {
             background: linear-gradient(to right, #d62828 0%, #d62828 ${(volume * 100)}%, #333 ${(volume * 100)}%, #333 100%);
@@ -240,7 +379,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', variant = 'co
                   {radioStatus.now_playing?.song?.title || 'Muzică în curs...'}
                 </h4>
                 <p className="text-sm text-[#f0f0f0]/60">
-                  {Math.floor(localElapsed / 60)}:{String(localElapsed % 60).padStart(2, '0')} / 
+                  {Math.floor((radioStatus.now_playing?.elapsed || 0) / 60)}:{String((radioStatus.now_playing?.elapsed || 0) % 60).padStart(2, '0')} / 
                   {Math.floor((radioStatus.now_playing?.duration || 0) / 60)}:{String(Math.floor(radioStatus.now_playing?.duration || 0) % 60).padStart(2, '0')}
                 </p>
               </div>
@@ -282,6 +421,8 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', variant = 'co
             </p>
           )}
         </div>
+
+
       </div>
 
       <style jsx>{`
