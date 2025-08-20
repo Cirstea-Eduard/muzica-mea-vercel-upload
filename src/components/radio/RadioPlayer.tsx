@@ -202,8 +202,8 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', onStatusUpdat
               <Music className="h-4 w-4 text-[#d62828]" />
               <span className="text-sm text-[#d62828] font-bold uppercase tracking-wide">ACUM CÂNTĂ:</span>
               <span className="text-sm text-[#f0f0f0] font-medium">
-                {radioStatus.now_playing.song.artist ? `${radioStatus.now_playing.song.artist} - ` : ''}
-                {radioStatus.now_playing.song.title}
+                {radioStatus.now_playing?.song?.artist ? `${radioStatus.now_playing.song.artist} - ` : ''}
+                {radioStatus.now_playing?.song?.title || 'Muzică în curs...'}
               </span>
             </div>
           </div>
@@ -219,14 +219,14 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', onStatusUpdat
             <div className="flex items-center justify-center space-x-3">
               <div className={`w-3 h-3 rounded-full ${radioStatus?.is_online ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
               <span className="text-base lg:text-lg text-[#f0f0f0]/80">
-                În direct • {radioStatus?.station.name || 'MuzicaMea Radio'}
+                În direct • {radioStatus?.station?.name || 'MuzicaMea Radio'}
               </span>
             </div>
           </div>
 
           {radioStatus?.now_playing && (
             <div className="w-40 h-40 lg:w-48 lg:h-48 bg-[#d62828]/20 rounded-2xl flex items-center justify-center overflow-hidden border-4 border-[#d62828]/30 shadow-2xl">
-              {radioStatus.now_playing.song.art ? (
+              {radioStatus.now_playing?.song?.art ? (
                 <Image 
                   src={radioStatus.now_playing.song.art} 
                   alt="Album Art"
@@ -269,10 +269,10 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', onStatusUpdat
             )}
           </button>
 
-          <div className="flex flex-col items-center space-y-3 w-full">
+          <div className="flex items-center justify-center space-x-3 w-full max-w-xs">
             <button
               onClick={toggleMute}
-              className="p-2 text-[#f0f0f0] hover:text-[#d62828] transition-colors rounded-full hover:bg-[#d62828]/10"
+              className="p-2 text-[#f0f0f0] hover:text-[#d62828] transition-colors rounded-full hover:bg-[#d62828]/10 flex-shrink-0"
             >
               {isMuted || volume === 0 ? (
                 <VolumeX className="h-5 w-5" />
@@ -280,8 +280,8 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', onStatusUpdat
                 <Volume2 className="h-5 w-5" />
               )}
             </button>
-            <div className="flex items-center space-x-2 lg:space-x-3 w-full max-w-48">
-              <span className="text-xs text-[#f0f0f0]/60 min-w-[1.5rem] text-center">0</span>
+            <div className="flex items-center space-x-2 flex-1">
+              <span className="text-xs text-[#f0f0f0]/60 min-w-[1rem] text-center">0</span>
               <input
                 type="range"
                 min="0"
@@ -351,7 +351,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', onStatusUpdat
               <Radio className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-[#f0f0f0]">{radioStatus?.station.name || 'MuzicaMea Radio'}</h3>
+              <h3 className="text-xl font-bold text-[#f0f0f0]">{radioStatus?.station?.name || 'MuzicaMea Radio'}</h3>
               <div className="flex items-center space-x-2">
                 <div className={`w-2 h-2 rounded-full ${radioStatus?.is_online ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
                 <span className="text-sm text-[#f0f0f0]/70">
@@ -388,7 +388,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', onStatusUpdat
           <div className="bg-[#0D0D0D]/50 rounded-lg p-4 mb-6 border border-[#d62828]/20">
             <div className="flex items-center space-x-4">
               <div className="w-16 h-16 bg-[#d62828]/20 rounded-lg flex items-center justify-center overflow-hidden">
-                {radioStatus.now_playing.song.art ? (
+                {radioStatus.now_playing?.song?.art ? (
                   <Image 
                     src={radioStatus.now_playing.song.art} 
                     alt="Album Art"
@@ -409,12 +409,12 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ className = '', onStatusUpdat
                   <span className="text-sm text-[#d62828] font-medium">ACUM CÂNTĂ</span>
                 </div>
                 <h4 className="text-lg font-semibold text-[#f0f0f0] mb-1">
-                  {radioStatus.now_playing.song.artist ? `${radioStatus.now_playing.song.artist} - ` : ''}
-                  {radioStatus.now_playing.song.title}
+                  {radioStatus.now_playing?.song?.artist ? `${radioStatus.now_playing.song.artist} - ` : ''}
+                  {radioStatus.now_playing?.song?.title || 'Muzică în curs...'}
                 </h4>
                 <p className="text-sm text-[#f0f0f0]/60">
-                  {Math.floor(radioStatus.now_playing.elapsed / 60)}:{String(radioStatus.now_playing.elapsed % 60).padStart(2, '0')} / 
-                  {Math.floor(radioStatus.now_playing.duration / 60)}:{String(Math.floor(radioStatus.now_playing.duration) % 60).padStart(2, '0')}
+                  {Math.floor((radioStatus.now_playing?.elapsed || 0) / 60)}:{String((radioStatus.now_playing?.elapsed || 0) % 60).padStart(2, '0')} / 
+                  {Math.floor((radioStatus.now_playing?.duration || 0) / 60)}:{String(Math.floor(radioStatus.now_playing?.duration || 0) % 60).padStart(2, '0')}
                 </p>
               </div>
             </div>
