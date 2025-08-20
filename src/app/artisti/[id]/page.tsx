@@ -8,7 +8,7 @@ import { ArrowLeft, Mail, Phone, Music, ExternalLink, Instagram, Youtube, Facebo
 import ArtistMusicPlayer from '../../../components/artists/ArtistMusicPlayer';
 
 interface Artist {
-  id: string;
+  _id: string;
   nume: string;
   imagine: string;
   titluPiesa: string;
@@ -31,12 +31,11 @@ const ArtistPage = () => {
   useEffect(() => {
     const loadArtist = async () => {
       try {
-        const response = await fetch('/data/artisti.json');
-        const artisti: Artist[] = await response.json();
-        const foundArtist = artisti.find(a => a.id === params.id);
+        const response = await fetch(`/api/artists/${params.id}`);
+        const result = await response.json();
         
-        if (foundArtist) {
-          setArtist(foundArtist);
+        if (result.success) {
+          setArtist(result.artist);
         } else {
           setNotFound(true);
         }

@@ -1,31 +1,120 @@
-import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import path from 'path';
+import { NextRequest, NextResponse } from 'next/server';
+import connectDB from '../../../lib/mongodb';
+import Artist from '../../../models/Artist';
 
-export async function POST(request: Request) {
+// GET - Fetch all artists
+export async function GET() {
   try {
-    const { artists } = await request.json();
+    await connectDB();
+    const artists = await Artist.find({}).sort({ createdAt: -1 });
 
-    if (!Array.isArray(artists)) {
+    return NextResponse.json({
+      success: true,
+      artists: artists
+    });
+
+  } catch (error) {
+    console.error('Eroare la încărcarea artiștilor:', error);
+    return NextResponse.json(
+      { error: 'Eroare la încărcarea datelor' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST - Create new artist
+export async function POST(request: NextRequest) {
+  try {
+    await connectDB();
+    const artistData = await request.json();
+
+    const newArtist = new Artist(artistData);
+    await newArtist.save();
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Artistul a fost creat cu succes',
+      artist: newArtist
+    });
+
+  } catch (error) {
+    console.error('Eroare la crearea artistului:', error);
+    return NextResponse.json(
+      { error: 'Eroare la crearea artistului' },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT - Update artist
+export async function PUT(request: NextRequest) {
+  try {
+    await connectDB();
+    const { _id, ...updateData } = await request.json();
+
+    if (!_id) {
       return NextResponse.json(
-        { error: 'Datele artiștilor trebuie să fie un array' },
+        { error: 'ID-ul artistului este obligatoriu' },
         { status: 400 }
       );
     }
 
-    const filePath = path.join(process.cwd(), 'public', 'data', 'artisti.json');
-    
-    await writeFile(filePath, JSON.stringify(artists, null, 2), 'utf8');
+    const updatedArtist = await Artist.findByIdAndUpdate(_id, updateData, { new: true });
+
+    if (!updatedArtist) {
+      return NextResponse.json(
+        { error: 'Artistul nu a fost găsit' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Datele artiștilor au fost actualizate cu succes' 
+      message: 'Artistul a fost actualizat cu succes',
+      artist: updatedArtist
     });
 
   } catch (error) {
-    console.error('Eroare la actualizarea artiștilor:', error);
+    console.error('Eroare la actualizarea artistului:', error);
     return NextResponse.json(
-      { error: 'Eroare internă la actualizarea datelor' },
+      { error: 'Eroare la actualizarea artistului' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - Delete artist
+export async function DELETE(request: NextRequest) {
+  try {
+    await connectDB();
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'ID-ul artistului este obligatoriu' },
+        { status: 400 }
+      );
+    }
+
+    const deletedArtist = await Artist.findByIdAndDelete(id);
+
+    if (!deletedArtist) {
+      return NextResponse.json(
+        { error: 'Artistul nu a fost găsit' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Artistul a fost șters cu succes'
+    });
+
+  } catch (error) {
+    console.error('Eroare la ștergerea artistului:', error);
+    return NextResponse.json(
+      { error: 'Eroare la ștergerea artistului' },
       { status: 500 }
     );
   }
