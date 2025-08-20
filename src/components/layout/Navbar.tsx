@@ -25,7 +25,7 @@ const Navbar = () => {
     { href: '/asculta-live', label: 'Ascultă Live' },
     { href: '/alatura-te-ca-artist', label: 'Alătură-te Ca Artist' },
     { href: '/artisti', label: 'Artiști' },
-    { href: 'https://siteexample.com/blog', label: 'Blog', external: true },
+    { href: 'https://blog.muzicamea.ro', label: 'Blog', external: true },
     { href: '/contact', label: 'Contact' },
   ];
 
