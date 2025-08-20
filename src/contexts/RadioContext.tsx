@@ -110,7 +110,91 @@ export const RadioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const RADIO_STREAM_URL = process.env.NEXT_PUBLIC_RADIO_STREAM_URL;
   const RADIO_API_URL = process.env.NEXT_PUBLIC_RADIO_API_URL;
 
-  const initializeAudio = useCallback(() => {
+
+
+  const fetchRadioStatus = useCallback(async () => {
+    try {
+      if (!RADIO_API_URL) {
+        throw new Error('URL-ul API pentru radio nu este configurat');
+      }
+      
+      const response = await fetch(RADIO_API_URL);
+      if (!response.ok) {
+        throw new Error('Nu s-au putut încărca informațiile radio');
+      }
+      const data: RadioStatus = await response.json();
+      setRadioStatus(data);
+      setLocalElapsed(data.now_playing?.elapsed || 0);
+      setError(null);
+    } catch (err) {
+      console.error('Eroare la încărcarea statusului radio:', err);
+      setError('Nu s-au putut încărca informațiile radio');
+    }
+  }, [RADIO_API_URL]);
+
+  const togglePlay = useCallback(async () => {
+    if (!audioRef.current) {
+      setError('Audio player nu este inițializat');
+      return;
+    }
+
+    const audio = audioRef.current;
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
+    try {
+      if (isPlaying) {
+        audio.pause();
+        setIsLoading(false);
+      } else {
+        setIsLoading(true);
+        setError(null);
+        
+        const playPromise = audio.play();
+        
+        if (playPromise !== undefined) {
+          await playPromise;
+        }
+        
+        timeoutRef.current = setTimeout(() => {
+          if (isLoading && !isPlaying) {
+            setIsLoading(false);
+            setError('Stream-ul se încarcă lent. Încercați din nou.');
+          }
+        }, 8000);
+      }
+    } catch (err) {
+      console.error('Eroare la redarea audio:', err);
+      setError('Nu s-a putut reda stream-ul. Încercați din nou.');
+      setIsPlaying(false);
+      setIsLoading(false);
+    }
+  }, [isPlaying, isLoading]);
+
+  const handleVolumeChange = useCallback((newVolume: number) => {
+    setVolume(newVolume);
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume;
+    }
+    if (newVolume === 0) {
+      setIsMuted(true);
+    } else {
+      setIsMuted(false);
+    }
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    if (isMuted) {
+      handleVolumeChange(0.7);
+    } else {
+      handleVolumeChange(0);
+    }
+  }, [isMuted, handleVolumeChange]);
+
+  useEffect(() => {
     if (!audioRef.current && typeof window !== 'undefined') {
       audioRef.current = new Audio();
       audioRef.current.src = RADIO_STREAM_URL || '';
@@ -167,103 +251,8 @@ export const RadioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       audio.addEventListener('error', handleError);
       audio.addEventListener('play', handlePlay);
       audio.addEventListener('pause', handlePause);
-
-      return () => {
-        audio.removeEventListener('canplay', handleCanPlay);
-        audio.removeEventListener('loadstart', handleLoadStart);
-        audio.removeEventListener('waiting', handleWaiting);
-        audio.removeEventListener('playing', handlePlaying);
-        audio.removeEventListener('error', handleError);
-        audio.removeEventListener('play', handlePlay);
-        audio.removeEventListener('pause', handlePause);
-      };
-    }
-  }, [RADIO_STREAM_URL, volume]);
-
-  const fetchRadioStatus = useCallback(async () => {
-    try {
-      if (!RADIO_API_URL) {
-        throw new Error('URL-ul API pentru radio nu este configurat');
-      }
-      
-      const response = await fetch(RADIO_API_URL);
-      if (!response.ok) {
-        throw new Error('Nu s-au putut încărca informațiile radio');
-      }
-      const data: RadioStatus = await response.json();
-      setRadioStatus(data);
-      setLocalElapsed(data.now_playing?.elapsed || 0);
-      setError(null);
-    } catch (err) {
-      console.error('Eroare la încărcarea statusului radio:', err);
-      setError('Nu s-au putut încărca informațiile radio');
-    }
-  }, [RADIO_API_URL]);
-
-  const togglePlay = useCallback(async () => {
-    if (!audioRef.current) {
-      initializeAudio();
-      if (!audioRef.current) return;
     }
 
-    const audio = audioRef.current;
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-
-    try {
-      if (isPlaying) {
-        audio.pause();
-        setIsLoading(false);
-      } else {
-        setIsLoading(true);
-        setError(null);
-        
-        const playPromise = audio.play();
-        
-        if (playPromise !== undefined) {
-          await playPromise;
-        }
-        
-        timeoutRef.current = setTimeout(() => {
-          if (isLoading && !isPlaying) {
-            setIsLoading(false);
-            setError('Stream-ul se încarcă lent. Încercați din nou.');
-          }
-        }, 8000);
-      }
-    } catch (err) {
-      console.error('Eroare la redarea audio:', err);
-      setError('Nu s-a putut reda stream-ul. Încercați din nou.');
-      setIsPlaying(false);
-      setIsLoading(false);
-    }
-  }, [isPlaying, isLoading, initializeAudio]);
-
-  const handleVolumeChange = useCallback((newVolume: number) => {
-    setVolume(newVolume);
-    if (audioRef.current) {
-      audioRef.current.volume = newVolume;
-    }
-    if (newVolume === 0) {
-      setIsMuted(true);
-    } else {
-      setIsMuted(false);
-    }
-  }, []);
-
-  const toggleMute = useCallback(() => {
-    if (isMuted) {
-      handleVolumeChange(0.7);
-    } else {
-      handleVolumeChange(0);
-    }
-  }, [isMuted, handleVolumeChange]);
-
-  useEffect(() => {
-    initializeAudio();
     fetchRadioStatus();
     
     intervalRef.current = setInterval(fetchRadioStatus, 30000);
@@ -283,7 +272,13 @@ export const RadioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         audioRef.current = null;
       }
     };
-  }, [initializeAudio, fetchRadioStatus]);
+  }, [RADIO_STREAM_URL, volume, fetchRadioStatus]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
 
   useEffect(() => {
     if (isPlaying && radioStatus?.now_playing) {
