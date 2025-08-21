@@ -17,7 +17,7 @@ const Footer = () => {
               <div className="flex items-center justify-center space-x-3">
                 <Youtube className="h-5 w-5 text-[#d62828]" />
                 <a 
-                  href="https://www.youtube.com/@SorinGomoiuMusicProduction" 
+                  href="www.youtube.com/@SorinGomoiu"
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-lg hover:text-[#d62828] transition-colors duration-300"
