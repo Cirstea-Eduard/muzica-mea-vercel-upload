@@ -18,7 +18,7 @@ const HeroSection = () => {
       <div className="max-w-4xl mx-auto relative z-10">
    
         
-        <h1 className="text-4xl md:text-6xl font-bold mb-6 fade-in-up text-[#f0f0f0]" style={{animationDelay: '0.2s'}}>
+        <h1 className="text-4xl -mt-20 md:mt-0 md:text-6xl font-bold mb-6 fade-in-up text-[#f0f0f0]" style={{animationDelay: '0.2s'}}>
           Muzică bună, mai aproape de{' '}
           <span className="text-[#d62828]">sufletul tău</span>
         </h1>
