@@ -27,11 +27,11 @@ const ContactFormSection = () => {
               Pentru a te înregistra ca artist la MuzicaMea Radio, te rugăm să ne contactezi la:
             </p>
             <a 
-              href="mailto:Sorin.gomoiu@yahoo.com?subject=Înregistrare Artist - MuzicaMea Radio"
+              href="mailto:sorin.gomoiu@yahoo.com?subject=Înregistrare Artist - MuzicaMea Radio"
               className="inline-flex items-center bg-[#d62828] hover:bg-[#b61e1e] text-[#f0f0f0] px-8 py-4 rounded-lg font-semibold text-lg btn-transition"
             >
               <Mail className="mr-2 h-5 w-5" />
-                Sorin.gomoiu@yahoo.com
+                sorin.gomoiu@yahoo.com
             </a>
             
             <div className="mt-8 text-left">
