@@ -66,8 +66,8 @@ export default function ArtistCancelPage() {
                 <li>• Contactează banca pentru eventuale probleme</li>
                 <li>• Încearcă cu o altă metodă de plată</li>
                 <li>• Contactează-ne pentru asistență la: 
-                  <a href="mailto:Sorin.gomoiu@yahoo.com" className="text-[#d62828] hover:underline ml-1">
-                      Sorin.gomoiu@yahoo.com
+                  <a href="mailto:sorin.gomoiu@yahoo.com" className="text-[#d62828] hover:underline ml-1">
+                      sorin.gomoiu@yahoo.com
                   </a>
                 </li>
               </ul>
@@ -111,10 +111,10 @@ export default function ArtistCancelPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <a 
-                href="mailto:Sorin.gomoiu@yahoo.com"
+                href="mailto:sorin.gomoiu@yahoo.com"
                 className="text-[#d62828] hover:text-[#b61e1e] transition-colors text-lg font-semibold"
               >
-                📧 Sorin.gomoiu@yahoo.com
+                📧 sorin.gomoiu@yahoo.com
               </a>
               <span className="hidden sm:block text-[#f0f0f0]/50">|</span>
               <a 

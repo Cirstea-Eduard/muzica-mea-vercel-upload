@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     const imageLink = image?.success ? image.url : 'Nu a fost încărcat';
 
     const msg = {
-      to: process.env.CONTACT_EMAIL_TO || 'Sorin.gomoiu@yahoo.com',
+      to: process.env.CONTACT_EMAIL_TO || 'sorin.gomoiu@yahoo.com',
       from: process.env.CONTACT_EMAIL_FROM || 'contact@systemiotech.com',
       subject: `[MuzicaMea] Înregistrare Nouă Artist - ${artistName}`,
       text: `

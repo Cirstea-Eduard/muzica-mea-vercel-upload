@@ -112,10 +112,10 @@ export default function ContactPage() {
                 <div>
                   <h3 className="text-lg font-semibold text-[#f0f0f0] mb-1">Email</h3>
                   <a 
-                    href="mailto:Sorin.gomoiu@yahoo.com"
+                    href="mailto:sorin.gomoiu@yahoo.com"
                     className="text-[#d62828] hover:text-[#b61e1e] transition-colors text-lg"
                   >
-                      Sorin.gomoiu@yahoo.com
+                      sorin.gomoiu@yahoo.com
                   </a>
                   <p className="text-[#f0f0f0]/70 text-sm mt-1">
                     Îți răspundem în maxim 24 de ore

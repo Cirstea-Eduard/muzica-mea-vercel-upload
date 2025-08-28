@@ -221,7 +221,7 @@ export default function PoliticaDeConfidentialitatePage() {
                 Pentru exercitarea drepturilor sau întrebări despre această politică:
               </p>
               <div className="bg-[#0D0D0D] p-4 rounded-lg border border-[#d62828]/20">
-                <p><strong>Email:</strong> Sorin.gomoiu@yahoo.com</p>
+                <p><strong>Email:</strong> sorin.gomoiu@yahoo.com</p>
                 <p><strong>Telefon:</strong> 0752 268 082</p>
                 <p><strong>Autoritatea de supraveghere:</strong> Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP)</p>
               </div>
