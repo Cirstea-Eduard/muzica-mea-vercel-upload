@@ -85,10 +85,10 @@ export default function NotFound() {
             Dacă crezi că aceasta este o eroare, nu ezita să ne contactezi:
           </p>
           <a 
-            href="mailto:Sorin.gomoiu@yahoo.com"
+            href="mailto:sorin.gomoiu@yahoo.com"
             className="text-[#d62828] hover:text-[#b61e1e] transition-colors"
           >
-              Sorin.gomoiu@yahoo.com
+              sorin.gomoiu@yahoo.com
           </a>
         </div>
       </div>

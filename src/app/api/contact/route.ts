@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const validatedData = contactSchema.parse(body);
     
     const msg = {
-      to: process.env.CONTACT_EMAIL_TO || 'Sorin.gomoiu@yahoo.com',
+      to: process.env.CONTACT_EMAIL_TO || 'sorin.gomoiu@yahoo.com',
       from: process.env.CONTACT_EMAIL_FROM || 'contact@systemiotech.com',
       subject: `[MuzicaMea Contact] ${validatedData.subject}`,
       text: `
