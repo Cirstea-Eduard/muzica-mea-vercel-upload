@@ -176,7 +176,7 @@ export default function TermeniSiConditiiPage() {
                 Pentru întrebări despre acești termeni, ne puteți contacta la:
               </p>
               <div className="bg-[#0D0D0D] p-4 rounded-lg border border-[#d62828]/20">
-                <p><strong>Email:</strong> contact@soringomoiu.ro</p>
+                <p><strong>Email:</strong> Sorin.gomoiu@yahoo.com</p>
                 <p><strong>Telefon:</strong> 0752 268 082</p>
               </div>
             </div>
